@@ -21,21 +21,19 @@ def read_json_file(f):
 def github_headers():
     return {'Authorization': 'token ' + os.environ['GITHUB_ACCESS_TOKEN']}
 
-def create_github_issues(issues):
-    print('Number of exported bitbucket issues:', len(issues))
-
 def query_github_issues():
-    r = requests.get(url = issue_url(), headers = github_headers())
-    if not r.ok:
-        r.raise_for_status()
-    issues = r.json()
-    print(issues)
-    return issues
+    res = requests.get(url = issue_url(), headers = github_headers())
+    if not res.ok:
+        res.raise_for_status()
+    print(res.content)
+    gissues = res.json()
+    return gissues
 
 def bitbucket_to_github(bitbucket):
+    bissues = bitbucket['issues']
     gissues = query_github_issues()
     print('Number of github issues before import:', len(gissues))
-    create_github_issues(bitbucket['issues'])
+    print('Number of exported bitbucket issues:', len(bissues))
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
