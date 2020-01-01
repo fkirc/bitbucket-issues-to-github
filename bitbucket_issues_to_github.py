@@ -4,7 +4,6 @@ import sys
 import os
 import requests
 from requests_toolbelt.utils import dump
-import logging
 
 TARGET_REPO='ThomasOlip/random-gallery'
 
@@ -41,7 +40,6 @@ def bitbucket_to_github(bitbucket):
     print('Number of exported bitbucket issues:', len(bissues))
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
     if len(sys.argv) < 2:
         print('Usage: ' + sys.argv[0] + ' <bitbucket export json file>')
         exit(-1)
