@@ -27,7 +27,6 @@ def do_request(req):
 
 def read_json_file(f):
     json_object = json.loads(f.read())
-    print(json_object)
     return json_object
 
 def github_headers():
@@ -39,9 +38,6 @@ def query_gissues():
     res = do_request(Request('GET', url=issue_url(), headers=github_headers()))
     return res.json()
 
-def post_gissue(gissue):
-    do_request(Request('POST', url=issue_url(), headers=github_headers(), json=gissue))
-
 def bissue_to_gissue(bissue):
     return {
       "title": bissue['title'],
@@ -52,14 +48,26 @@ def bissue_to_gissue(bissue):
       "labels": [bissue['kind']]
     }
 
+def post_bissue_to_github(bissue):
+    gissue = bissue_to_gissue(bissue=bissue)
+    do_request(Request('POST', url=issue_url(), headers=github_headers(), json=gissue))
+
+def gissues_contains_bissue(gissues, bissue):
+    for gissue in gissues:
+        if gissue['title'] == bissue['title']:
+            return True
+    return False
+
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
     old_gissues = query_gissues()
-    print('Number of github issues before import:', len(old_gissues))
-    print('Number of exported bitbucket issues:', len(bissues))
+    print('Number of github issues before POST:', len(old_gissues))
+    print('Number of bitbucket issues in file:', len(bissues))
     bissue = bissues[0]
-    gissue = bissue_to_gissue(bissue=bissue)
-    post_gissue(gissue=gissue)
+    if gissues_contains_bissue(gissues=old_gissues, bissue=bissue):
+        print('Skip issue "' + bissue['title'] + '" since it is already present on github')
+    else:
+        post_bissue_to_github(bissue=bissue)
 
 def main():
     if len(sys.argv) < 2:
