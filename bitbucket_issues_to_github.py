@@ -9,6 +9,8 @@ import requests_toolbelt
 
 TARGET_REPO='ThomasOlip/random-gallery'
 
+f_name=None
+
 def repo_url():
     return 'https://api.github.com/repos/' + TARGET_REPO
 
@@ -61,8 +63,8 @@ def gissues_contains_bissue(gissues, bissue):
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
     old_gissues = query_gissues()
-    print('Number of github issues before POST:', len(old_gissues))
-    print('Number of bitbucket issues in file:', len(bissues))
+    print('Number of github issues in ' + repo_url() + ' before POSTing:', len(old_gissues))
+    print('Number of bitbucket issues in ' + f_name + ':', len(bissues))
     bissue = bissues[0]
     if gissues_contains_bissue(gissues=old_gissues, bissue=bissue):
         print('Skip issue "' + bissue['title'] + '" since it is already present on github')
@@ -70,6 +72,7 @@ def bitbucket_to_github(bitbucket):
         post_bissue_to_github(bissue=bissue)
 
 def main():
+    global f_name
     if len(sys.argv) < 2:
         print('Usage: ' + sys.argv[0] + ' <bitbucket export json file>')
         exit(-1)
