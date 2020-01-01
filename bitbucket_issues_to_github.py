@@ -3,6 +3,7 @@ import json
 import sys
 import os
 import requests
+from requests_toolbelt.utils import dump
 import logging
 
 TARGET_REPO='ThomasOlip/random-gallery'
@@ -23,11 +24,15 @@ def github_headers():
 
 def query_github_issues():
     res = requests.get(url = issue_url(), headers = github_headers())
+    data = dump.dump_all(res)
+    print(data.decode('utf-8'))
     if not res.ok:
         res.raise_for_status()
-    print(res.content)
     gissues = res.json()
     return gissues
+
+def post_github_issue(gissue):
+    res = requests.post(url=issue_url())
 
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
