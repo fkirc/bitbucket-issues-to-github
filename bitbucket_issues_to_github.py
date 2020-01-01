@@ -49,8 +49,7 @@ def bissue_to_gissue(bissue):
       "assignees": [
         bissue['assignee']
       ],
-      "milestone": 1,
-      "labels": []
+      "labels": [bissue['kind']]
     }
 
 def bitbucket_to_github(bitbucket):
