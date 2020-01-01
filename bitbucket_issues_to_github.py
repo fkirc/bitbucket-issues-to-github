@@ -39,14 +39,24 @@ def query_github_issues():
     res = do_request(Request('GET', url = issue_url(), headers = github_headers()))
     return res.json()
 
-def post_github_issue(gissue):
-    res = requests.post(url=issue_url())
+def bissue_to_gissue(bissue):
+    return {
+      "title": bissue['title'],
+      "body": bissue['content'],
+      "assignees": [
+        bissue['assignee']
+      ],
+      "milestone": 1,
+      "labels": []
+    }
 
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
-    gissues = query_github_issues()
-    print('Number of github issues before import:', len(gissues))
+    old_gissues = query_github_issues()
+    print('Number of github issues before import:', len(old_gissues))
     print('Number of exported bitbucket issues:', len(bissues))
+    bissue = bissues[0]
+    gissue = bissue_to_gissue(bissue=bissue)
 
 def main():
     if len(sys.argv) < 2:
