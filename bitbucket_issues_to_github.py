@@ -35,9 +35,12 @@ def github_headers():
             'User-Agent': requests_toolbelt.user_agent('bitbucket_issues_to_github', '1.0.0')
             }
 
-def query_github_issues():
-    res = do_request(Request('GET', url = issue_url(), headers = github_headers()))
+def query_gissues():
+    res = do_request(Request('GET', url=issue_url(), headers=github_headers()))
     return res.json()
+
+def post_gissue(gissue):
+    do_request(Request('POST', url=issue_url(), headers=github_headers(), json=gissue))
 
 def bissue_to_gissue(bissue):
     return {
@@ -52,11 +55,12 @@ def bissue_to_gissue(bissue):
 
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
-    old_gissues = query_github_issues()
+    old_gissues = query_gissues()
     print('Number of github issues before import:', len(old_gissues))
     print('Number of exported bitbucket issues:', len(bissues))
     bissue = bissues[0]
     gissue = bissue_to_gissue(bissue=bissue)
+    post_gissue(gissue=gissue)
 
 def main():
     if len(sys.argv) < 2:
