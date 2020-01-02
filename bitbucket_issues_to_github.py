@@ -13,7 +13,13 @@ TARGET_REPO = 'ThomasOlip/random-gallery'
 USER_MAPPING = {
     'martin_gaertner': 'MartinGaertner',
     'thomas_o': 'ThomasOlip',
-    'fkirc': 'fkirc'
+    'fkirc': 'fkirc',
+}
+
+# We map bitbucket's issue "kind" to github's issue "labels".
+LABEL_MAPPING = {
+    "task": "enhancement",
+    "proposal": "suggestion",
 }
 
 f_name=None
@@ -106,9 +112,15 @@ def patch_gissue(gissue, bissue):
     else:
         gstate = 'closed'
 
+    bkind = bissue['kind']
+    if bkind in LABEL_MAPPING:
+        glabel = LABEL_MAPPING[bkind]
+    else:
+        glabel = bkind
+
     gissue_patch = {
         "assignees": gassignees,
-        "labels": [bissue['kind']],
+        "labels": [glabel],
         "state": gstate,
     }
     if is_gissue_patch_different(gissue=gissue, gissue_patch=gissue_patch):
