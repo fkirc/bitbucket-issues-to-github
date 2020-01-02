@@ -194,11 +194,11 @@ def parse_bitbucket_export(f):
         raise ValueError('Could not find any issue in ' + f_name)
     comments = bexport_json['comments']
     comment_map = {}
+    for bissue in bissues:
+        comment_map[bissue['id']] = []
     for comment in comments:
-        bidx = comment['issue']
-        if bidx not in comment_map:
-            comment_map[bidx] = []
-        comment_map[bidx].append(comment)
+        bissue_idx = comment['issue']
+        comment_map[bissue_idx].append(comment)
     for comments in comment_map.values():
         comments.reverse()
     return BitbucketExport(bissues=bissues, comment_map=comment_map)
