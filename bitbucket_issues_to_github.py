@@ -57,7 +57,37 @@ def query_gissues():
             break
     return issues
 
-def bissue_to_gissue(bissue):
+def post_bissue_to_github(bissue):
+    # We patch the remaining elements right after posting the issue.
+    incomplete_gissue = {
+      "title": bissue['title'],
+      "body": bissue['content'],
+    }
+    res = do_request(Request('POST', url=issue_url(), headers=github_headers(), json=incomplete_gissue))
+    full_gissue = res.json()
+    return full_gissue
+
+def is_gissue_patch_different(gissue, gissue_patch):
+    if gissue['state'] != gissue_patch['state']:
+        return True
+    gissue_assignees = gissue['assignees']
+    gissue_labels = gissue['labels']
+    gissue_patch_assignees = gissue_patch['assignees']
+    gissue_patch_labels = gissue_patch['labels']
+    if len(gissue_assignees) != len(gissue_patch_assignees):
+        return True
+    if len(gissue_labels) != len(gissue_patch_labels):
+        return True
+    if len(gissue_assignees) > 0 and gissue_assignees[0]['login'] != gissue_patch_assignees[0]:
+        return True
+    if len(gissue_labels) > 0 and gissue_labels[0]['name'] != gissue_patch_labels[0]:
+        return True
+    return False
+
+def patch_gissue(gissue, bissue):
+    if gissue['title'] != bissue['title']:
+        raise ValueError('Inconsistent issues')
+
     bassignee = bissue['assignee']
     if bassignee is None:
         gassignees = []
@@ -65,21 +95,27 @@ def bissue_to_gissue(bissue):
         gassignees = [USER_MAPPING[bassignee]]
     else:
         gassignees = []
-    return {
-      "title": bissue['title'],
-      "body": bissue['content'],
-      "assignees": gassignees,
-      "labels": [bissue['kind']]
+
+    bstatus = bissue['status']
+    if bstatus == 'new' or bstatus == 'open':
+        gstate = 'open'
+    else:
+        gstate = 'closed'
+
+    gissue_patch = {
+        "assignees": gassignees,
+        "labels": [bissue['kind']],
+        "state": gstate,
     }
+    if is_gissue_patch_different(gissue=gissue, gissue_patch=gissue_patch):
+        do_request(Request('PATCH', url=issue_url() + '/' + str(gissue['number']), headers=github_headers(), json=gissue_patch))
+    else:
+        print('Skip issue "' + gissue['title'] + '" since there are no changes compared to ' + repo_url())
 
-def post_bissue_to_github(bissue):
-    gissue = bissue_to_gissue(bissue=bissue)
-    do_request(Request('POST', url=issue_url(), headers=github_headers(), json=gissue))
-
-def gissues_contains_bissue(gissues, bissue):
+def find_gissue_with_bissue_title(gissues, bissue):
     for gissue in gissues:
         if gissue['title'] == bissue['title']:
-            return True
+            return gissue
     return False
 
 def bitbucket_to_github(bitbucket):
@@ -90,10 +126,11 @@ def bitbucket_to_github(bitbucket):
     if len(bissues) == 0:
         raise ValueError('Could not find any issue in ' + f_name)
     for bissue in bissues:
-        if gissues_contains_bissue(gissues=old_gissues, bissue=bissue):
-            print('Skip issue "' + bissue['title'] + '" since it is already present on ' + repo_url())
-        else:
-            post_bissue_to_github(bissue=bissue)
+        gissue = find_gissue_with_bissue_title(gissues=old_gissues, bissue=bissue)
+        if gissue is None:
+            gissue = post_bissue_to_github(bissue=bissue)
+        patch_gissue(gissue=gissue, bissue=bissue)
+        #break
 
 def main():
     global f_name
