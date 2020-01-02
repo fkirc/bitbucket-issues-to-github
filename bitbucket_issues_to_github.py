@@ -173,8 +173,6 @@ def bitbucket_to_github(bexport):
 
     print('Number of github issues in ' + repo_url() + ' before POSTing:', len(old_gissues))
     print('Number of bitbucket issues in ' + f_name + ':', len(bissues))
-    if len(bissues) == 0:
-        raise ValueError('Could not find any issue in ' + f_name)
 
     for bissue in bissues:
         gissue = find_gissue_with_bissue_title(gissues=old_gissues, bissue=bissue)
@@ -191,6 +189,9 @@ class BitbucketExport:
 
 def parse_bitbucket_export(f):
     bexport_json = read_json_file(f)
+    bissues = bexport_json['issues']
+    if len(bissues) == 0:
+        raise ValueError('Could not find any issue in ' + f_name)
     comments = bexport_json['comments']
     comment_map = {}
     for comment in comments:
@@ -200,7 +201,7 @@ def parse_bitbucket_export(f):
         comment_map[bidx].append(comment)
     for comments in comment_map.values():
         comments.reverse()
-    return BitbucketExport(bissues=bexport_json['issues'], comment_map=comment_map)
+    return BitbucketExport(bissues=bissues, comment_map=comment_map)
 
 
 def main():
