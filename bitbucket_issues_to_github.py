@@ -66,7 +66,7 @@ def do_github_request(req):
     return do_request(req)
 
 
-def query_gissues():
+def query_all_repo_gissues():
     # The issues endpoint is a paginated API.
     # We need to iterate over all issues to make this script idempotent.
     query_url = issue_url()
@@ -108,38 +108,51 @@ def is_gissue_patch_different(gissue, gissue_patch):
     return False
 
 
+def map_bstatus_to_gstate(bissue):
+    bstatus = bissue['status']
+    if bstatus == 'new' or bstatus == 'open':
+        return 'open'
+    else:
+        return 'closed'
+
+
+def map_bassignee_to_gassignees(bissue):
+    bassignee = bissue['assignee']
+    if bassignee is None:
+        return []
+    elif bassignee in USER_MAPPING:
+        return [USER_MAPPING[bassignee]]
+    else:
+        return []
+
+
+def map_bstatus_to_glabels(bissue, glabels):
+    bstatus = bissue['status']
+    if bstatus in STATUS_MAPPING:
+        glabels.add(STATUS_MAPPING[bstatus])
+
+
+def map_bkind_to_glabels(bissue, glabels):
+    bkind = bissue['kind']
+    if bkind in KIND_MAPPING:
+        label = KIND_MAPPING[bkind]
+    else:
+        label = bkind
+    glabels.add(label)
+
+
 def patch_gissue(gissue, bissue):
     if gissue['title'] != bissue['title']:
         raise ValueError('Inconsistent issues')
 
     glabels = set()
-    bassignee = bissue['assignee']
-    if bassignee is None:
-        gassignees = []
-    elif bassignee in USER_MAPPING:
-        gassignees = [USER_MAPPING[bassignee]]
-    else:
-        gassignees = []
-
-    bstatus = bissue['status']
-    if bstatus == 'new' or bstatus == 'open':
-        gstate = 'open'
-    else:
-        gstate = 'closed'
-
-    bkind = bissue['kind']
-    if bkind in KIND_MAPPING:
-        glabels.add(KIND_MAPPING[bkind])
-    else:
-        glabels.add(bkind)
-
-    if bstatus in STATUS_MAPPING:
-        glabels.add(STATUS_MAPPING[bstatus])
+    map_bkind_to_glabels(bissue=bissue, glabels=glabels)
+    map_bstatus_to_glabels(bissue=bissue, glabels=glabels)
 
     gissue_patch = {
-        "assignees": gassignees,
+        "assignees": map_bassignee_to_gassignees(bissue=bissue),
         "labels": list(glabels),
-        "state": gstate,
+        "state": map_bstatus_to_gstate(bissue=bissue),
     }
     if is_gissue_patch_different(gissue=gissue, gissue_patch=gissue_patch):
         do_github_request(Request('PATCH', url=issue_url() + '/' + str(gissue['number']), json=gissue_patch))
@@ -156,11 +169,13 @@ def find_gissue_with_bissue_title(gissues, bissue):
 
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
-    old_gissues = query_gissues()
+    old_gissues = query_all_repo_gissues()
+
     print('Number of github issues in ' + repo_url() + ' before POSTing:', len(old_gissues))
     print('Number of bitbucket issues in ' + f_name + ':', len(bissues))
     if len(bissues) == 0:
         raise ValueError('Could not find any issue in ' + f_name)
+
     for bissue in bissues:
         gissue = find_gissue_with_bissue_title(gissues=old_gissues, bissue=bissue)
         if gissue is None:
