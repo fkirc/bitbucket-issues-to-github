@@ -68,7 +68,7 @@ def do_github_request(req):
 
 def query_gissues():
     # The issues endpoint is a paginated API.
-    # We need to iterate over all issues to make this script re-entrant.
+    # We need to iterate over all issues to make this script idempotent.
     query_url = issue_url()
     issues = []
     while True:
