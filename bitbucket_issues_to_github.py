@@ -94,10 +94,12 @@ def is_gissue_patch_different(gissue, gissue_patch):
         return True
     if len(gissue_labels) != len(gissue_patch_labels):
         return True
-    if len(gissue_assignees) > 0 and gissue_assignees[0]['login'] != gissue_patch_assignees[0]:
-        return True
-    if len(gissue_labels) > 0 and gissue_labels[0]['name'] != gissue_patch_labels[0]:
-        return True
+    for idx in range(len(gissue_assignees)):
+        if gissue_assignees[idx]['login'] != gissue_patch_assignees[idx]:
+            return True
+    for idx in range(len(gissue_labels)):
+        if gissue_labels[idx]['name'] != gissue_patch_labels[idx]:
+            return True
     return False
 
 def patch_gissue(gissue, bissue):
