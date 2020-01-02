@@ -41,12 +41,15 @@ def query_gissues():
     return res.json()
 
 def bissue_to_gissue(bissue):
+    bassignee = bissue['assignee']
+    if bassignee is not None:
+        gassignees = [bassignee]
+    else:
+        gassignees = []
     return {
       "title": bissue['title'],
       "body": bissue['content'],
-      "assignees": [
-        bissue['assignee']
-      ],
+      "assignees": gassignees,
       "labels": [bissue['kind']]
     }
 
@@ -65,11 +68,13 @@ def bitbucket_to_github(bitbucket):
     old_gissues = query_gissues()
     print('Number of github issues in ' + repo_url() + ' before POSTing:', len(old_gissues))
     print('Number of bitbucket issues in ' + f_name + ':', len(bissues))
-    bissue = bissues[0]
-    if gissues_contains_bissue(gissues=old_gissues, bissue=bissue):
-        print('Skip issue "' + bissue['title'] + '" since it is already present on github')
-    else:
-        post_bissue_to_github(bissue=bissue)
+    if len(bissues) == 0:
+        raise ValueError('Could not find any issue in ' + f_name)
+    for bissue in bissues:
+        if gissues_contains_bissue(gissues=old_gissues, bissue=bissue):
+            print('Skip issue "' + bissue['title'] + '" since it is already present on ' + repo_url())
+        else:
+            post_bissue_to_github(bissue=bissue)
 
 def main():
     global f_name
@@ -79,7 +84,7 @@ def main():
     f_name = sys.argv[1]
 
     if 'GITHUB_ACCESS_TOKEN' not in os.environ:
-        print('Error: Environment variable GITHUB_ACCESS_TOKEN is not set')
+        raise ValueError('Environment variable GITHUB_ACCESS_TOKEN is not set')
         exit(-1)
 
     with open(f_name, 'r') as f:
