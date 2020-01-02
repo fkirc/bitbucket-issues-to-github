@@ -167,8 +167,8 @@ def find_gissue_with_bissue_title(gissues, bissue):
     return None
 
 
-def bitbucket_to_github(bitbucket):
-    bissues = bitbucket['issues']
+def bitbucket_to_github(bexport):
+    bissues = bexport.bissues
     old_gissues = query_all_repo_gissues()
 
     print('Number of github issues in ' + repo_url() + ' before POSTing:', len(old_gissues))
@@ -183,6 +183,26 @@ def bitbucket_to_github(bitbucket):
         patch_gissue(gissue=gissue, bissue=bissue)
 
 
+class BitbucketExport:
+    def __init__(self, bissues, comment_map):
+        self.bissues = bissues
+        self.comment_map = comment_map
+
+
+def parse_bitbucket_export(f):
+    bexport_json = read_json_file(f)
+    comments = bexport_json['comments']
+    comment_map = {}
+    for comment in comments:
+        bidx = comment['issue']
+        if bidx not in comment_map:
+            comment_map[bidx] = []
+        comment_map[bidx].append(comment)
+    for comments in comment_map.values():
+        comments.reverse()
+    return BitbucketExport(bissues=bexport_json['issues'], comment_map=comment_map)
+
+
 def main():
     global f_name
     if len(sys.argv) < 2:
@@ -194,7 +214,8 @@ def main():
         raise ValueError('Environment variable GITHUB_ACCESS_TOKEN is not set')
 
     with open(f_name, 'r') as f:
-        bitbucket_to_github(bitbucket=read_json_file(f))
+        bexport = parse_bitbucket_export(f=f)
+        bitbucket_to_github(bexport=bexport)
 
 
 main()
