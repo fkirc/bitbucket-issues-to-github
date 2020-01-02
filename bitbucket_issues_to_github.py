@@ -44,7 +44,7 @@ def github_headers():
             }
 
 def query_gissues():
-    res = do_request(Request('GET', url=issue_url(), headers=github_headers()))
+    res = do_request(Request('GET', url=issue_url(), params={'per_page': 100}, headers=github_headers()))
     return res.json()
 
 def bissue_to_gissue(bissue):
