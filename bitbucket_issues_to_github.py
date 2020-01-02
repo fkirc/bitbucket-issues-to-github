@@ -22,19 +22,22 @@ KIND_MAPPING = {
     "proposal": "suggestion",
 }
 
-# Github issues can be only open or closed.
+# The only github statuses are "open" and "closed".
 # Therefore, we map some bitbucket issue statuses to github's issue "labels".
 STATUS_MAPPING = {
     "on hold": "suggestion",
 }
 
-f_name=None
+f_name = None
+
 
 def repo_url():
     return 'https://api.github.com/repos/' + TARGET_REPO
 
+
 def issue_url():
     return repo_url() + '/issues'
+
 
 def do_request(req):
     prep_req = req.prepare()
@@ -46,18 +49,22 @@ def do_request(req):
         res.raise_for_status()
     return res
 
+
 def read_json_file(f):
     json_object = json.loads(f.read())
     return json_object
+
 
 def github_headers():
     return {'Authorization': 'token ' + os.environ['GITHUB_ACCESS_TOKEN'],
             'User-Agent': requests_toolbelt.user_agent('bitbucket_issues_to_github', '1.0.0')
             }
 
+
 def do_github_request(req):
     req.headers.update(github_headers())
     return do_request(req)
+
 
 def query_gissues():
     # The issues endpoint is a paginated API.
@@ -68,39 +75,38 @@ def query_gissues():
         res = do_github_request(Request('GET', url=query_url, params={'per_page': 100, 'state': 'all'}))
         issues.extend(res.json())
         if 'next' in res.links:
-            query_url  = res.links['next']['url']
+            query_url = res.links['next']['url']
         else:
             break
     return issues
 
+
 def post_bissue_to_github(bissue):
     # We patch the remaining elements right after posting the issue.
     incomplete_gissue = {
-      "title": bissue['title'],
-      "body": bissue['content'],
+        "title": bissue['title'],
+        "body": bissue['content'],
     }
     res = do_github_request(Request('POST', url=issue_url(), json=incomplete_gissue))
     full_gissue = res.json()
     return full_gissue
 
+
 def is_gissue_patch_different(gissue, gissue_patch):
     if gissue['state'] != gissue_patch['state']:
         return True
-    gissue_assignees = gissue['assignees']
-    gissue_labels = gissue['labels']
-    gissue_patch_assignees = gissue_patch['assignees']
-    gissue_patch_labels = gissue_patch['labels']
-    if len(gissue_assignees) != len(gissue_patch_assignees):
+
+    patch_assignees = set(gissue_patch['assignees'])
+    current_assignees = set(map(lambda assignee: assignee['login'], gissue['assignees']))
+    if current_assignees != patch_assignees:
         return True
-    if len(gissue_labels) != len(gissue_patch_labels):
+
+    patch_labels = set(gissue_patch['labels'])
+    current_labels = set(map(lambda label: label['name'], gissue['labels']))
+    if current_labels != patch_labels:
         return True
-    for idx in range(len(gissue_assignees)):
-        if gissue_assignees[idx]['login'] != gissue_patch_assignees[idx]:
-            return True
-    for idx in range(len(gissue_labels)):
-        if gissue_labels[idx]['name'] != gissue_patch_labels[idx]:
-            return True
     return False
+
 
 def patch_gissue(gissue, bissue):
     if gissue['title'] != bissue['title']:
@@ -140,11 +146,13 @@ def patch_gissue(gissue, bissue):
     else:
         print('Skip issue "' + gissue['title'] + '" since there are no changes compared to ' + repo_url())
 
+
 def find_gissue_with_bissue_title(gissues, bissue):
     for gissue in gissues:
         if gissue['title'] == bissue['title']:
             return gissue
     return None
+
 
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
@@ -158,7 +166,7 @@ def bitbucket_to_github(bitbucket):
         if gissue is None:
             gissue = post_bissue_to_github(bissue=bissue)
         patch_gissue(gissue=gissue, bissue=bissue)
-        #break
+
 
 def main():
     global f_name
@@ -169,9 +177,9 @@ def main():
 
     if 'GITHUB_ACCESS_TOKEN' not in os.environ:
         raise ValueError('Environment variable GITHUB_ACCESS_TOKEN is not set')
-        exit(-1)
 
     with open(f_name, 'r') as f:
         bitbucket_to_github(bitbucket=read_json_file(f))
+
 
 main()
