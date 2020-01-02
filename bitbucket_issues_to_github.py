@@ -7,7 +7,14 @@ from requests import Request
 from requests_toolbelt.utils import dump
 import requests_toolbelt
 
-TARGET_REPO='ThomasOlip/random-gallery'
+TARGET_REPO = 'ThomasOlip/random-gallery'
+
+# Github only accepts assignees from valid users, which need to be mapped from bitbucket users.
+USER_MAPPING = {
+    'martin_gaertner': 'MartinGaertner',
+    'thomas_o': 'ThomasOlip',
+    'fkirc': 'fkirc'
+}
 
 f_name=None
 
@@ -42,8 +49,10 @@ def query_gissues():
 
 def bissue_to_gissue(bissue):
     bassignee = bissue['assignee']
-    if bassignee is not None:
-        gassignees = [bassignee]
+    if bassignee is None:
+        gassignees = []
+    elif bassignee in USER_MAPPING:
+        gassignees = [USER_MAPPING[bassignee]]
     else:
         gassignees = []
     return {
