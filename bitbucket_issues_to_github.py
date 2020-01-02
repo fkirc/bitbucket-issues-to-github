@@ -9,7 +9,7 @@ import requests_toolbelt
 
 TARGET_REPO = 'ThomasOlip/random-gallery'
 
-# Github only accepts assignees from valid users, which need to be mapped from bitbucket users.
+# Github only accepts assignees from valid users. We need to map those users from bitbucket.
 USER_MAPPING = {
     'martin_gaertner': 'MartinGaertner',
     'thomas_o': 'ThomasOlip',
