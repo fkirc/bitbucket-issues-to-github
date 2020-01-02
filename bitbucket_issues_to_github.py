@@ -49,7 +49,7 @@ def query_gissues():
     query_url = issue_url()
     issues = []
     while True:
-        res = do_request(Request('GET', url=query_url, params={'per_page': 100}, headers=github_headers()))
+        res = do_request(Request('GET', url=query_url, params={'per_page': 100, 'state': 'all'}, headers=github_headers()))
         issues.extend(res.json())
         if 'next' in res.links:
             query_url  = res.links['next']['url']
@@ -116,7 +116,7 @@ def find_gissue_with_bissue_title(gissues, bissue):
     for gissue in gissues:
         if gissue['title'] == bissue['title']:
             return gissue
-    return False
+    return None
 
 def bitbucket_to_github(bitbucket):
     bissues = bitbucket['issues']
