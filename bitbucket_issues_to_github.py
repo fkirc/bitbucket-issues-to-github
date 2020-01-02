@@ -17,9 +17,15 @@ USER_MAPPING = {
 }
 
 # We map bitbucket's issue "kind" to github's issue "labels".
-LABEL_MAPPING = {
+KIND_MAPPING = {
     "task": "enhancement",
     "proposal": "suggestion",
+}
+
+# Github issues can be only open or closed.
+# Therefore, we map some bitbucket issue statuses to github's issue "labels".
+STATUS_MAPPING = {
+    "on hold": "suggestion",
 }
 
 f_name=None
@@ -98,6 +104,7 @@ def patch_gissue(gissue, bissue):
     if gissue['title'] != bissue['title']:
         raise ValueError('Inconsistent issues')
 
+    glabels = set()
     bassignee = bissue['assignee']
     if bassignee is None:
         gassignees = []
@@ -113,14 +120,17 @@ def patch_gissue(gissue, bissue):
         gstate = 'closed'
 
     bkind = bissue['kind']
-    if bkind in LABEL_MAPPING:
-        glabel = LABEL_MAPPING[bkind]
+    if bkind in KIND_MAPPING:
+        glabels.add(KIND_MAPPING[bkind])
     else:
-        glabel = bkind
+        glabels.add(bkind)
+
+    if bstatus in STATUS_MAPPING:
+        glabels.add(STATUS_MAPPING[bstatus])
 
     gissue_patch = {
         "assignees": gassignees,
-        "labels": [glabel],
+        "labels": list(glabels),
         "state": gstate,
     }
     if is_gissue_patch_different(gissue=gissue, gissue_patch=gissue_patch):
