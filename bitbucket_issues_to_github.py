@@ -43,13 +43,17 @@ def github_headers():
             'User-Agent': requests_toolbelt.user_agent('bitbucket_issues_to_github', '1.0.0')
             }
 
+def do_github_request(req):
+    req.headers.update(github_headers())
+    return do_request(req)
+
 def query_gissues():
     # The issues endpoint is a paginated API.
     # We need to iterate over all issues to make this script re-entrant.
     query_url = issue_url()
     issues = []
     while True:
-        res = do_request(Request('GET', url=query_url, params={'per_page': 100, 'state': 'all'}, headers=github_headers()))
+        res = do_github_request(Request('GET', url=query_url, params={'per_page': 100, 'state': 'all'}))
         issues.extend(res.json())
         if 'next' in res.links:
             query_url  = res.links['next']['url']
@@ -63,7 +67,7 @@ def post_bissue_to_github(bissue):
       "title": bissue['title'],
       "body": bissue['content'],
     }
-    res = do_request(Request('POST', url=issue_url(), headers=github_headers(), json=incomplete_gissue))
+    res = do_github_request(Request('POST', url=issue_url(), json=incomplete_gissue))
     full_gissue = res.json()
     return full_gissue
 
@@ -108,7 +112,7 @@ def patch_gissue(gissue, bissue):
         "state": gstate,
     }
     if is_gissue_patch_different(gissue=gissue, gissue_patch=gissue_patch):
-        do_request(Request('PATCH', url=issue_url() + '/' + str(gissue['number']), headers=github_headers(), json=gissue_patch))
+        do_github_request(Request('PATCH', url=issue_url() + '/' + str(gissue['number']), json=gissue_patch))
     else:
         print('Skip issue "' + gissue['title'] + '" since there are no changes compared to ' + repo_url())
 
