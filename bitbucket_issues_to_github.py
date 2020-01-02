@@ -2,6 +2,7 @@
 import json
 import sys
 import os
+from dateutil import parser
 import requests
 from requests import Request
 from requests_toolbelt.utils import dump
@@ -95,6 +96,8 @@ def post_bissue_to_github(bissue):
 def is_gissue_patch_different(gissue, gissue_patch):
     if gissue['state'] != gissue_patch['state']:
         return True
+    if gissue['body'] != gissue_patch['body']:
+        return True
 
     patch_assignees = set(gissue_patch['assignees'])
     current_assignees = set(map(lambda assignee: assignee['login'], gissue['assignees']))
@@ -141,7 +144,41 @@ def map_bkind_to_glabels(bissue, glabels):
     glabels.add(label)
 
 
-def patch_gissue(gissue, bissue):
+def time_string_to_date_string(timestring):
+    datetime = parser.parse(timestring)
+    return datetime.strftime("%Y-%m-%d")
+
+
+def append_time_label(sb, timestring, label):
+    sb.append('\n[' + label + ': ' + timestring + ']')
+
+
+def append_bcomment(sb, bcomment):
+    content = bcomment['content']
+    if content is None:
+        return  # There are bitbucket comments without any content. We ignore them.
+    sb.append('\n')
+    comment_label = 'Comment created by ' + bcomment['user']
+    comment_created_on = time_string_to_date_string(timestring=bcomment['created_on'])
+    append_time_label(sb=sb, timestring=comment_created_on, label=comment_label)
+    sb.append('\n')
+    sb.append(content)
+
+
+def construct_gissue_content(bissue, bexport):
+    sb = [bissue['content'], '\n']
+    created_on = time_string_to_date_string(timestring=bissue['created_on'])
+    updated_on = time_string_to_date_string(timestring=bissue['updated_on'])
+    append_time_label(sb=sb, timestring=created_on, label='Issue created by ' + bissue['reporter'])
+    if created_on != updated_on:
+        append_time_label(sb=sb, timestring=updated_on, label='Last updated on bitbucket')
+    bcomments = bexport.comment_map[bissue['id']]
+    for bcomment in bcomments:
+        append_bcomment(sb=sb, bcomment=bcomment)
+    return ''.join(sb)
+
+
+def patch_gissue(gissue, bissue, bexport):
     if gissue['title'] != bissue['title']:
         raise ValueError('Inconsistent issues')
 
@@ -150,6 +187,7 @@ def patch_gissue(gissue, bissue):
     map_bstatus_to_glabels(bissue=bissue, glabels=glabels)
 
     gissue_patch = {
+        "body": construct_gissue_content(bissue=bissue, bexport=bexport),
         "assignees": map_bassignee_to_gassignees(bissue=bissue),
         "labels": list(glabels),
         "state": map_bstatus_to_gstate(bissue=bissue),
@@ -178,7 +216,7 @@ def bitbucket_to_github(bexport):
         gissue = find_gissue_with_bissue_title(gissues=old_gissues, bissue=bissue)
         if gissue is None:
             gissue = post_bissue_to_github(bissue=bissue)
-        patch_gissue(gissue=gissue, bissue=bissue)
+        patch_gissue(gissue=gissue, bissue=bissue, bexport=bexport)
 
 
 class BitbucketExport:
