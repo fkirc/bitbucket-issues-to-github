@@ -17,14 +17,14 @@ USER_MAPPING = {
     'fkirc': 'fkirc',
 }
 
-# We map bitbucket's issue "kind" to github's issue "labels".
+# We map bitbucket's issue "kind" to github "labels".
 KIND_MAPPING = {
     "task": "enhancement",
     "proposal": "suggestion",
 }
 
 # The only github statuses are "open" and "closed".
-# Therefore, we map some bitbucket issue statuses to github's issue "labels".
+# Therefore, we map some bitbucket statuses to github "labels".
 STATUS_MAPPING = {
     "on hold": "suggestion",
 }
