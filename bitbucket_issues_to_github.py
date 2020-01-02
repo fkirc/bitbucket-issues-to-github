@@ -44,8 +44,18 @@ def github_headers():
             }
 
 def query_gissues():
-    res = do_request(Request('GET', url=issue_url(), params={'per_page': 100}, headers=github_headers()))
-    return res.json()
+    # The issues endpoint is a paginated API.
+    # We need to iterate over all issues to make this script re-entrant.
+    query_url = issue_url()
+    issues = []
+    while True:
+        res = do_request(Request('GET', url=query_url, params={'per_page': 100}, headers=github_headers()))
+        issues.extend(res.json())
+        if 'next' in res.links:
+            query_url  = res.links['next']['url']
+        else:
+            break
+    return issues
 
 def bissue_to_gissue(bissue):
     bassignee = bissue['assignee']
