@@ -7,33 +7,11 @@ import requests
 from requests import Request
 from requests_toolbelt.utils import dump
 import requests_toolbelt
-
-TARGET_REPO = 'ThomasOlip/random-gallery'
-
-# Github only accepts assignees from valid users. We map those users from bitbucket.
-USER_MAPPING = {
-    'martin_gaertner': 'MartinGaertner',
-    'thomas_o': 'ThomasOlip',
-    'fkirc': 'fkirc',
-}
-
-# We map bitbucket's issue "kind" to github "labels".
-KIND_MAPPING = {
-    "task": "enhancement",
-    "proposal": "suggestion",
-}
-
-# The only github statuses are "open" and "closed".
-# Therefore, we map some bitbucket statuses to github "labels".
-STATUS_MAPPING = {
-    "on hold": "suggestion",
-}
-
-f_name = None
+import config
 
 
 def repo_url():
-    return 'https://api.github.com/repos/' + TARGET_REPO
+    return 'https://api.github.com/repos/' + config.TARGET_REPO
 
 
 def issue_url():
@@ -123,22 +101,22 @@ def map_bassignee_to_gassignees(bissue):
     bassignee = bissue['assignee']
     if bassignee is None:
         return []
-    elif bassignee in USER_MAPPING:
-        return [USER_MAPPING[bassignee]]
+    elif bassignee in config.USER_MAPPING:
+        return [config.USER_MAPPING[bassignee]]
     else:
         return []
 
 
 def map_bstatus_to_glabels(bissue, glabels):
     bstatus = bissue['status']
-    if bstatus in STATUS_MAPPING:
-        glabels.add(STATUS_MAPPING[bstatus])
+    if bstatus in config.STATUS_MAPPING:
+        glabels.add(config.STATUS_MAPPING[bstatus])
 
 
 def map_bkind_to_glabels(bissue, glabels):
     bkind = bissue['kind']
-    if bkind in KIND_MAPPING:
-        label = KIND_MAPPING[bkind]
+    if bkind in config.KIND_MAPPING:
+        label = config.KIND_MAPPING[bkind]
     else:
         label = bkind
     glabels.add(label)
@@ -210,7 +188,7 @@ def bitbucket_to_github(bexport):
     old_gissues = query_all_repo_gissues()
 
     print('Number of github issues in ' + repo_url() + ' before POSTing:', len(old_gissues))
-    print('Number of bitbucket issues in ' + f_name + ':', len(bissues))
+    print('Number of bitbucket issues in ' + bexport.f_name + ':', len(bissues))
 
     for bissue in bissues:
         gissue = find_gissue_with_bissue_title(gissues=old_gissues, bissue=bissue)
@@ -220,12 +198,14 @@ def bitbucket_to_github(bexport):
 
 
 class BitbucketExport:
-    def __init__(self, bissues, comment_map):
+    def __init__(self, bissues, comment_map, f_name):
         self.bissues = bissues
         self.comment_map = comment_map
+        self.f_name = f_name
 
 
-def parse_bitbucket_export(f):
+def parse_bitbucket_export(f, f_name):
+    print('Parsing ' + f_name + '...')
     bexport_json = read_json_file(f)
     bissues = bexport_json['issues']
     if len(bissues) == 0:
@@ -239,11 +219,10 @@ def parse_bitbucket_export(f):
         comment_map[bissue_idx].append(comment)
     for comments in comment_map.values():
         comments.reverse()
-    return BitbucketExport(bissues=bissues, comment_map=comment_map)
+    return BitbucketExport(bissues=bissues, comment_map=comment_map, f_name=f_name)
 
 
 def main():
-    global f_name
     if len(sys.argv) < 2:
         print('Usage: ' + sys.argv[0] + ' <bitbucket export json file>')
         exit(-1)
@@ -253,7 +232,7 @@ def main():
         raise ValueError('Environment variable GITHUB_ACCESS_TOKEN is not set')
 
     with open(f_name, 'r') as f:
-        bexport = parse_bitbucket_export(f=f)
+        bexport = parse_bitbucket_export(f=f, f_name=f_name)
         bitbucket_to_github(bexport=bexport)
 
 
