@@ -18,7 +18,7 @@ As of January 2020, this Bitbucket export yields two JSON files:
 This script only works with the `db-1.0.json` file.
 The Bitbucket export can be only done by Bitbucket repo administrators.
 
-Secondly, obtain a personal access token for the Github API.
+Secondly, obtain a "Personal Access Token" for the Github API.
 Set your token as an environment variable:  
 `export GITHUB_ACCESS_TOKEN=<your access token>`
 
@@ -38,5 +38,15 @@ A simple way to setup the dependencies is to use Python3's `venv` tool:
 
 `python3 -m venv py3`  
 `source ./py3/bin/activate`  
-`pip3 install -r requirements.pip`  
+`pip3 install -r requirements.pip`
 
+### Why can't I use my Github password?
+
+Github deprecated basic authentication for several API endpoints.
+Instead, Github recommends to use "Personal Access Tokens" to access their API.
+Moreover, basic authentication does not work if you are using Github two factor authentication.
+Therefore, this script does not support authentication via your regular Github password.
+
+### Sidenotes
+
+Although not required, I recommend to migrate to a fresh Github repo with zero issues. By doing so, the old Bitbucket issue numbers should remain valid after the migration.
