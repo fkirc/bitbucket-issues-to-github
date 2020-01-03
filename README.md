@@ -31,7 +31,7 @@ Once you have met these prerequisites and setup the dependencies, you can run th
 `python3 bitbucket_issues_to_github.py db-1.0.json`
 
 
-### Dependencies
+## Dependencies
 
 Python3 is required.
 A simple way to setup the dependencies is to use Python3's `venv` tool:
@@ -40,13 +40,13 @@ A simple way to setup the dependencies is to use Python3's `venv` tool:
 `source ./py3/bin/activate`  
 `pip3 install -r requirements.pip`
 
-### Why can't I use my Github password?
+## Why can't I use my Github password?
 
-Github deprecated basic authentication for several API endpoints.
+Github deprecated password authentication for several API endpoints.
 Instead, Github recommends to use "Personal Access Tokens" to access their API.
 Moreover, your Github password does not work if you are using Github two factor authentication.
 Therefore, this script does not support authentication via your regular Github password.
 
-### Sidenotes
+## Sidenotes
 
 Although not required, I recommend to migrate to a fresh Github repo with zero issues. By doing so, the old Bitbucket issue numbers should remain valid after the migration.
