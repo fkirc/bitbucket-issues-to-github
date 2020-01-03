@@ -19,7 +19,7 @@ This script only works with the `db-1.0.json` file.
 The Bitbucket export can be only done by Bitbucket repo administrators.
 
 Secondly, obtain a personal access token for the Github API.
-Set your token as an environment variable:
+Set your token as an environment variable:  
 `export GITHUB_ACCESS_TOKEN=<your access token>`
 
 Thirdly, configure this script in `config.py`.
