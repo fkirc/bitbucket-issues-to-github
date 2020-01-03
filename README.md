@@ -44,7 +44,7 @@ A simple way to setup the dependencies is to use Python3's `venv` tool:
 
 Github deprecated basic authentication for several API endpoints.
 Instead, Github recommends to use "Personal Access Tokens" to access their API.
-Moreover, basic authentication does not work if you are using Github two factor authentication.
+Moreover, your Github password does not work if you are using Github two factor authentication.
 Therefore, this script does not support authentication via your regular Github password.
 
 ### Sidenotes
