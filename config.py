@@ -19,3 +19,11 @@ KIND_MAPPING = {
 STATUS_MAPPING = {
     "on hold": "suggestion",
 }
+
+# Bitbucket has several issue states.
+# All states that are not listed in this set will be closed.
+OPEN_ISSUE_STATES = {
+    "open",
+    "new",
+    "on hold",
+}

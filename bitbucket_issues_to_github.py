@@ -91,7 +91,7 @@ def is_gissue_patch_different(gissue, gissue_patch):
 
 def map_bstatus_to_gstate(bissue):
     bstatus = bissue['status']
-    if bstatus == 'new' or bstatus == 'open':
+    if bstatus in config.OPEN_ISSUE_STATES:
         return 'open'
     else:
         return 'closed'
