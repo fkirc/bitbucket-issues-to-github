@@ -109,8 +109,8 @@ def map_bassignee_to_gassignees(bissue):
 
 def map_bstatus_to_glabels(bissue, glabels):
     bstatus = bissue['status']
-    if bstatus in config.STATUS_MAPPING:
-        glabels.add(config.STATUS_MAPPING[bstatus])
+    if bstatus in config.STATE_MAPPING:
+        glabels.add(config.STATE_MAPPING[bstatus])
 
 
 def map_bkind_to_glabels(bissue, glabels):

@@ -14,9 +14,9 @@ KIND_MAPPING = {
     "proposal": "suggestion",
 }
 
-# The only github statuses are "open" and "closed".
-# Therefore, we map some bitbucket statuses to github "labels".
-STATUS_MAPPING = {
+# The only github states are "open" and "closed".
+# Therefore, we map some bitbucket states to github "labels".
+STATE_MAPPING = {
     "on hold": "suggestion",
 }
 
