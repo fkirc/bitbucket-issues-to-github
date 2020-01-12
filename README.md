@@ -1,6 +1,6 @@
 # Bitbucket To Github Issues Migration
 
-<a href="https://github.com/fkirc/bitbucket-issues-to-github/actions"><img alt="Build status" src="https://github.com/fkirc/bitbucket-issues-to-github/workflows/Tests/badge.svg?branch=master"></a>
+<a href="https://github.com/fkirc/bitbucket-issues-to-github/actions?query=branch%3Amaster"><img alt="Build status" src="https://github.com/fkirc/bitbucket-issues-to-github/workflows/Tests/badge.svg?branch=master"></a>
 
 A simple Python script to migrate both Bitbucket issues and comments to a Github repo.
 
