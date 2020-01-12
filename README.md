@@ -1,5 +1,7 @@
 # Bitbucket To Github Issues Migration
 
+![](https://github.com/actions/fkirc/bitbucket-issues-to-github/Tests/badge.svg)
+
 A simple Python script to migrate both Bitbucket issues and comments to a Github repo.
 
 ## Why should I use this instead of other scripts?
