@@ -34,14 +34,18 @@ def read_json_file(f):
     return json_object
 
 
-def github_headers():
-    return {'Authorization': 'token ' + os.environ['GITHUB_ACCESS_TOKEN'],
-            'User-Agent': requests_toolbelt.user_agent('bitbucket_issues_to_github', '1.0.0')
-            }
+def get_github_access_token():
+    if 'GITHUB_ACCESS_TOKEN' in os.environ:
+        return os.environ['GITHUB_ACCESS_TOKEN']
+    else:
+        return None
 
 
 def do_github_request(req):
-    req.headers.update(github_headers())
+    headers = {'User-Agent': requests_toolbelt.user_agent('bitbucket_issues_to_github', '1.0.0')}
+    if get_github_access_token() is not None:
+        headers['Authorization'] = 'token ' + get_github_access_token()
+    req.headers.update(headers)
     return do_request(req)
 
 
@@ -228,8 +232,8 @@ def main():
         exit(-1)
     f_name = sys.argv[1]
 
-    if 'GITHUB_ACCESS_TOKEN' not in os.environ:
-        raise ValueError('Environment variable GITHUB_ACCESS_TOKEN is not set')
+    if get_github_access_token() is None:
+        print('Warning: Environment variable GITHUB_ACCESS_TOKEN is not set. This script will fail for private repositories.')
 
     with open(f_name, 'r') as f:
         bexport = parse_bitbucket_export(f=f, f_name=f_name)
