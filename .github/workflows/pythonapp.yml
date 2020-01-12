@@ -26,4 +26,5 @@ jobs:
         flake8 bitbucket_issues_to_github.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run the tests
       run: |
+        chmod +x tests/test.sh
         ./tests/test.sh
