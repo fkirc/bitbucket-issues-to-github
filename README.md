@@ -38,7 +38,7 @@ A simple way to setup the dependencies is to use Python3's `venv` tool:
 
 `python3 -m venv py3`  
 `source ./py3/bin/activate`  
-`pip3 install -r requirements.pip`
+`pip3 install -r requirements.txt`
 
 ## Why can't I use my Github password?
 
