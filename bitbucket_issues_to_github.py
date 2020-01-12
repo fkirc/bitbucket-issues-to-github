@@ -30,7 +30,7 @@ def do_request(req):
 
 
 def read_json_file(f):
-    json_object = json.loads(f.read())
+    json_object = json.load(f)
     return json_object
 
 
