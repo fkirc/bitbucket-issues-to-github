@@ -24,7 +24,7 @@ Secondly, obtain a "Personal Access Token" for the Github API.
 Set your token as an environment variable:  
 `export GITHUB_ACCESS_TOKEN=<your access token>`
 
-Thirdly, configure this script in `config.py`.
+Thirdly, configure this script in [config.py](config.py).
 The only mandatory configuration is `TARGET_REPO`, which needs to be configured to `<repo owner>/<repo name>`.
 All other configurations can be kept as is.
 
