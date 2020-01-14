@@ -15,7 +15,7 @@ The idempotency enables you to tweak this script even after running the initial 
 ## How to use it
 
 Firstly, export the issues from your Bitbucket repo via the Bitbucket web interface.
-As of January 2020, this Bitbucket export yields two JSON files:
+This Bitbucket export yields two JSON files:
 `db-1.0.json` and `db-2.0.json`.
 This script only works with the `db-1.0.json` file.
 The Bitbucket export can be only done by Bitbucket repo administrators.
