@@ -235,7 +235,7 @@ def main():
     if get_github_access_token() is None:
         print('Warning: Environment variable GITHUB_ACCESS_TOKEN is not set. This script will fail for private repositories.')
 
-    with open(f_name, 'r') as f:
+    with open(f_name, 'r', encoding='utf8') as f:
         bexport = parse_bitbucket_export(f=f, f_name=f_name)
         bitbucket_to_github(bexport=bexport)
 
