@@ -1,12 +1,14 @@
 #!/usr/bin/python
 import json
-import sys
 import os
-from dateutil import parser
+import sys
+
 import requests
-from requests import Request
-from requests_toolbelt.utils import dump
-import requests_toolbelt
+import requests_toolbelt  # type: ignore
+from dateutil import parser
+from requests import Request, Response
+from requests_toolbelt.utils import dump  # type: ignore
+from typing import Union, Dict, Any
 import config
 
 
@@ -18,7 +20,7 @@ def issue_url():
     return repo_url() + '/issues'
 
 
-def do_request(req):
+def do_request(req) -> Response:
     prep_req = req.prepare()
     s = requests.session()
     res = s.send(prep_req)
@@ -34,17 +36,18 @@ def read_json_file(f):
     return json_object
 
 
-def get_github_access_token():
+def get_github_access_token() -> Union[str, None]:
     if 'GITHUB_ACCESS_TOKEN' in os.environ:
         return os.environ['GITHUB_ACCESS_TOKEN']
     else:
         return None
 
 
-def do_github_request(req):
+def do_github_request(req) -> Response:
     headers = {'User-Agent': requests_toolbelt.user_agent('bitbucket_issues_to_github', '1.0.0')}
-    if get_github_access_token() is not None:
-        headers['Authorization'] = 'token ' + get_github_access_token()
+    token = get_github_access_token()
+    if token is not None:
+        headers['Authorization'] = 'token ' + token
     req.headers.update(headers)
     return do_request(req)
 
@@ -126,7 +129,7 @@ def map_bkind_to_glabels(bissue, glabels):
     glabels.add(label)
 
 
-def time_string_to_date_string(timestring):
+def time_string_to_date_string(timestring) -> str:
     datetime = parser.parse(timestring)
     return datetime.strftime("%Y-%m-%d")
 
@@ -208,14 +211,14 @@ class BitbucketExport:
         self.f_name = f_name
 
 
-def parse_bitbucket_export(f, f_name):
+def parse_bitbucket_export(f, f_name) -> BitbucketExport:
     print('Parsing ' + f_name + '...')
     bexport_json = read_json_file(f)
     bissues = bexport_json['issues']
     if len(bissues) == 0:
         raise ValueError('Could not find any issue in ' + f_name)
     comments = bexport_json['comments']
-    comment_map = {}
+    comment_map: Dict[str, Any] = {}
     for bissue in bissues:
         comment_map[bissue['id']] = []
     for comment in comments:
@@ -233,7 +236,8 @@ def main():
     f_name = sys.argv[1]
 
     if get_github_access_token() is None:
-        print('Warning: Environment variable GITHUB_ACCESS_TOKEN is not set. This script will fail for private repositories.')
+        print(
+            'Warning: Environment variable GITHUB_ACCESS_TOKEN is not set. This script will fail for private repositories.')
 
     with open(f_name, 'r', encoding='utf8') as f:
         bexport = parse_bitbucket_export(f=f, f_name=f_name)
