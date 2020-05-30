@@ -1,3 +1,4 @@
-requests
-python-dateutil
-requests_toolbelt
+requests==2.23.0
+python-dateutil==2.8.1
+requests_toolbelt==0.9.1
+mypy==0.770
