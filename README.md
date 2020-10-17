@@ -1,8 +1,8 @@
-# Bitbucket To Github Issues Migration
+# Bitbucket To GitHub Issues Migration
 
 <a href="https://github.com/fkirc/bitbucket-issues-to-github/actions?query=branch%3Amaster"><img alt="CI status" src="https://github.com/fkirc/bitbucket-issues-to-github/workflows/Tests/badge.svg/?branch=master"></a>
 
-A simple Python script to migrate both Bitbucket issues and comments to a Github repo.
+A simple Python script to migrate both Bitbucket issues and comments to a GitHub repo.
 
 ## Why should I use this instead of other scripts?
 
@@ -20,7 +20,7 @@ This Bitbucket export yields two JSON files:
 This script only works with the `db-1.0.json` file.
 The Bitbucket export can be only done by Bitbucket repo administrators.
 
-Secondly, obtain a "Personal Access Token" for the Github API.
+Secondly, obtain a "Personal Access Token" for the GitHub API.
 Set your token as an environment variable:  
 `export GITHUB_ACCESS_TOKEN=<your access token>`
 
@@ -42,12 +42,12 @@ A simple way to setup the dependencies is to use Python3's `venv` tool:
 `source ./py3/bin/activate`  
 `pip3 install -r requirements.txt`
 
-## Why can't I use my Github password?
+## Why can't I use my GitHub password?
 
-Github deprecated password authentication for several API endpoints.
-Instead, Github recommends to use "Personal Access Tokens" to access their API.
-Moreover, your Github password does not work if you are using Github two factor authentication.
-Therefore, this script does not support authentication via your regular Github password.
+GitHub deprecated password authentication for several API endpoints.
+Instead, GitHub recommends to use "Personal Access Tokens" to access their API.
+Moreover, your GitHub password does not work if you are using GitHub two factor authentication.
+Therefore, this script does not support authentication via your regular GitHub password.
 
 ## Additional features
 
@@ -56,4 +56,4 @@ However, if you have very specific migration-needs, then we could setup a one-of
 
 ## Sidenotes
 
-Although not required, I recommend to migrate to a fresh Github repo with zero issues. By doing so, the old Bitbucket issue numbers should remain valid after the migration.
+Although not required, I recommend to migrate to a fresh GitHub repo with zero issues. By doing so, the old Bitbucket issue numbers should remain valid after the migration.
