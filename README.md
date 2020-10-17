@@ -52,7 +52,7 @@ Therefore, this script does not support authentication via your regular Github p
 ## Additional features
 
 I do not actively add new features to this script.
-However, if you have very specific migration-needs, then we could setup a one-time-contract to migrate issues within your organization.
+However, if you have very specific migration-needs, then we could setup a one-off-contract to migrate issues within your organization.
 
 ## Sidenotes
 
