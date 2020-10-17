@@ -49,6 +49,11 @@ Instead, Github recommends to use "Personal Access Tokens" to access their API.
 Moreover, your Github password does not work if you are using Github two factor authentication.
 Therefore, this script does not support authentication via your regular Github password.
 
+## Additional features
+
+I do not actively add new features to this script.
+However, if you have very specific migration-needs, then we could setup a one-time-contract to migrate issues within your organization.
+
 ## Sidenotes
 
 Although not required, I recommend to migrate to a fresh Github repo with zero issues. By doing so, the old Bitbucket issue numbers should remain valid after the migration.
