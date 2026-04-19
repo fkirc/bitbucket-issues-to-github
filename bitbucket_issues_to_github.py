@@ -20,6 +20,10 @@ def issue_url():
     return repo_url() + '/issues'
 
 
+def comment_url(issue_number):
+    return issue_url() + '/' + str(issue_number) + '/comments'
+
+
 def do_request(req) -> Response:
     prep_req = req.prepare()
     s = requests.session()
@@ -65,6 +69,30 @@ def query_all_repo_gissues():
         else:
             break
     return issues
+
+
+def query_gissue_comments(issue_number):
+    query_url = comment_url(issue_number)
+    comments = []
+    while True:
+        res = do_github_request(Request('GET', url=query_url, params={'per_page': 100}))
+        comments.extend(res.json())
+        if 'next' in res.links:
+            query_url = res.links['next']['url']
+        else:
+            break
+    return comments
+
+
+def make_comment_prefix(bcomment):
+    comment_created_on = time_string_to_date_string(timestring=bcomment['created_on'])
+    return '[Comment by ' + bcomment['user'] + ' on ' + comment_created_on + ']'
+
+
+def post_gissue_comment(issue_number, bcomment):
+    prefix = make_comment_prefix(bcomment)
+    body = prefix + '\n\n' + bcomment['content']
+    do_github_request(Request('POST', url=comment_url(issue_number), json={"body": body}))
 
 
 def post_bissue_to_github(bissue):
@@ -138,28 +166,13 @@ def append_time_label(sb, timestring, label):
     sb.append('\n[' + label + ': ' + timestring + ']')
 
 
-def append_bcomment(sb, bcomment):
-    content = bcomment['content']
-    if content is None:
-        return  # There are bitbucket comments without any content. We ignore them.
-    sb.append('\n')
-    comment_label = 'Comment created by ' + bcomment['user']
-    comment_created_on = time_string_to_date_string(timestring=bcomment['created_on'])
-    append_time_label(sb=sb, timestring=comment_created_on, label=comment_label)
-    sb.append('\n')
-    sb.append(content)
-
-
-def construct_gissue_content(bissue, bexport):
+def construct_gissue_content(bissue):
     sb = [bissue['content'], '\n']
     created_on = time_string_to_date_string(timestring=bissue['created_on'])
     updated_on = time_string_to_date_string(timestring=bissue['updated_on'])
     append_time_label(sb=sb, timestring=created_on, label='Issue created by ' + bissue['reporter'])
     if created_on != updated_on:
         append_time_label(sb=sb, timestring=updated_on, label='Last updated on bitbucket')
-    bcomments = bexport.comment_map[bissue['id']]
-    for bcomment in bcomments:
-        append_bcomment(sb=sb, bcomment=bcomment)
     return ''.join(sb)
 
 
@@ -172,7 +185,7 @@ def patch_gissue(gissue, bissue, bexport):
     map_bstatus_to_glabels(bissue=bissue, glabels=glabels)
 
     gissue_patch = {
-        "body": construct_gissue_content(bissue=bissue, bexport=bexport),
+        "body": construct_gissue_content(bissue=bissue),
         "assignees": map_bassignee_to_gassignees(bissue=bissue),
         "labels": list(glabels),
         "state": map_bstatus_to_gstate(bissue=bissue),
@@ -181,6 +194,19 @@ def patch_gissue(gissue, bissue, bexport):
         do_github_request(Request('PATCH', url=issue_url() + '/' + str(gissue['number']), json=gissue_patch))
     else:
         print('Skip issue "' + gissue['title'] + '" since there are no changes compared to ' + repo_url())
+
+    # Post Bitbucket comments as separate GitHub issue comments
+    bcomments = bexport.comment_map[bissue['id']]
+    bcomments_with_content = [c for c in bcomments if c['content'] is not None]
+    if bcomments_with_content:
+        existing_gcomments = query_gissue_comments(gissue['number'])
+        existing_prefixes = set(c['body'].split('\n')[0] for c in existing_gcomments)
+        for bcomment in bcomments_with_content:
+            prefix = make_comment_prefix(bcomment)
+            if prefix not in existing_prefixes:
+                post_gissue_comment(issue_number=gissue['number'], bcomment=bcomment)
+            else:
+                print('Skip comment "' + prefix + '" since it already exists')
 
 
 def find_gissue_with_bissue_title(gissues, bissue):
@@ -226,7 +252,7 @@ def parse_bitbucket_export(f, f_name) -> BitbucketExport:
         bissue_idx = comment['issue']
         comment_map[bissue_idx].append(comment)
     for comments in comment_map.values():
-        comments.reverse()
+        comments.sort(key=lambda c: c['created_on'])
     return BitbucketExport(bissues=bissues, comment_map=comment_map, f_name=f_name)
 
 
