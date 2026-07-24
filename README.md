@@ -1,3 +1,9 @@
+# Archive Notice:
+
+Five years ago, it made sense to open-source such a fine-polished script as a help for other people.
+Nowadays, whatever needs to be migrated from Bitbucket to GitHub can be done by agents generating a script on demand.
+Nevertheless, the concept of having "idempotent" migration scripts is still valuable to give as a requirement to agents.
+
 # Bitbucket To GitHub Issues Migration
 
 <a href="https://github.com/fkirc/bitbucket-issues-to-github/actions?query=branch%3Amaster"><img alt="CI status" src="https://github.com/fkirc/bitbucket-issues-to-github/workflows/Tests/badge.svg/?branch=master"></a>
